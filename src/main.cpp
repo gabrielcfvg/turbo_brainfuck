@@ -40,6 +40,8 @@ void comp(const std::string& file_path, const std::string& output_path, bool asc
     csfile[file_size] = 0;
     std::string sfile {std::move(csfile)};
 
+    file.close();
+
     std::optional<Program> prog = compile(sfile, true, ascii_default);
     if (prog.has_value())
         create_binary(prog.value(), output_path.data(), true);
@@ -65,7 +67,7 @@ void run(const std::string& file_path, bool scompile, bool ascii_default)
     uint32_t file_size = file.tellg();
     file.seekg(0, file.beg);
 
-    char buffer[4];
+    char buffer[5];
     file.read(buffer, 4);
 
     if (strcmp("brfk", buffer) == 0 && file.peek() == 0x00)
@@ -78,6 +80,7 @@ void run(const std::string& file_path, bool scompile, bool ascii_default)
         vm.program_size = file_size;
         vm.program = new uint8_t[file_size];
         file.read((char*)vm.program, file_size);
+        file.close();
 
         vm.run();
     }
@@ -93,6 +96,7 @@ void run(const std::string& file_path, bool scompile, bool ascii_default)
         char* csfile = new char[file_size + 1];
         file.read(csfile, file_size);
         csfile[file_size] = 0;
+        file.close();
 
         std::string sfile {std::move(csfile)};
         std::optional<Program> oprog = compile(sfile, true, ascii_default);
